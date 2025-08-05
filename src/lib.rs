@@ -12,6 +12,7 @@ pub enum Message {
     ThemeChanged(Theme),
     UsernameChanged(String),
     SearchClicked,
+    ApiResponse(Result<String, String>),
 }
 
 #[derive(Debug)]
@@ -39,14 +40,43 @@ impl Robigui {
     }
 }
 
+fn search_user(username: String) -> Message {
+    let url = format!(
+        "https://apis.roblox.com/search-api/omni-search?verticalType=user&searchQuery={}&sessionId=36b8f84d-df4e-4d49-b662-bcde71a8764f",
+        username
+    );
+
+    match ureq::get(&url).call() {
+        Ok(response) => match response.into_string() {
+            Ok(text) => {
+                println!("API Response: {}", text);
+                Message::ApiResponse(Ok(text))
+            }
+            Err(e) => {
+                println!("Error reading response: {}", e);
+                Message::ApiResponse(Err(format!("Error reading response: {}", e)))
+            }
+        },
+        Err(e) => {
+            println!("Error making request: {}", e);
+            Message::ApiResponse(Err(format!("Error making request: {}", e)))
+        }
+    }
+}
+
 impl Robigui {
     pub fn update(&mut self, message: Message) -> iced::Task<Message> {
         match message {
             Message::ThemeChanged(x) => self.selected_theme = x,
             Message::UsernameChanged(username) => self.username = username,
             Message::SearchClicked => {
-                println!("Search clicked! Username: {}", self.username);
+                let username = self.username.clone();
+                return Task::perform(async move { search_user(username) }, |msg| msg);
             }
+            Message::ApiResponse(result) => match result {
+                Ok(response) => println!("Search completed successfully: {}", response),
+                Err(error) => println!("Search failed: {}", error),
+            },
         }
 
         Task::none()
@@ -67,8 +97,7 @@ impl Robigui {
             Message::ThemeChanged,
         );
 
-        let search = button(text("Search "))
-            .on_press(Message::SearchClicked);
+        let search = button(text("Search ")).on_press(Message::SearchClicked);
 
         let setting_panel = row![username, search]
             .spacing(spacing)
