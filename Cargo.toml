@@ -1,0 +1,23 @@
+[package]
+name = "robigui"
+version = "0.1.0"
+authors = ["ahmoin <ahnmoin@tutamail.com>"]
+edition = "2024"
+description = "Robigui is a Roblox Dashboard"
+documentation = "https://github.com/ahmoin/robigui"
+readme = "README.md"
+homepage = "https://github.com/ahmoin/robigui"
+repository = "https://github.com/ahmoin/robigui"
+license = "MIT"
+
+[dependencies]
+anyhow = { git = "https://github.com/dtolnay/anyhow.git" }
+dirs = { git = "https://github.com/soc/dirs-rs.git" }
+iced = { git = "https://github.com/iced-rs/iced.git", features = [
+    "wgpu",
+    "tiny-skia",
+    "advanced",
+    "svg",
+    "image",
+] }
+rfd = { git = "https://github.com/PolyMeilex/rfd.git" }
