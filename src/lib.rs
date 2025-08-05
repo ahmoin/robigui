@@ -6,6 +6,7 @@ use iced::{
     alignment::{Horizontal, Vertical},
     widget::{Column, button, column, horizontal_rule, pick_list, row, text, text_input},
 };
+use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -19,6 +20,7 @@ pub enum Message {
 pub struct Robigui {
     username: String,
     selected_theme: Theme,
+    session_id: String,
 }
 
 impl Default for Robigui {
@@ -26,6 +28,7 @@ impl Default for Robigui {
         Self {
             username: Default::default(),
             selected_theme: Theme::CatppuccinMacchiato,
+            session_id: Uuid::new_v4().to_string(),
         }
     }
 }
@@ -40,14 +43,14 @@ impl Robigui {
     }
 }
 
-fn search_user(username: String) -> Message {
+fn search_user(username: String, session_id: String) -> Message {
     let url = format!(
-        "https://apis.roblox.com/search-api/omni-search?verticalType=user&searchQuery={}&sessionId=36b8f84d-df4e-4d49-b662-bcde71a8764f",
-        username
+        "https://apis.roblox.com/search-api/omni-search?verticalType=user&searchQuery={}&sessionId={}",
+        username, session_id
     );
 
     match ureq::get(&url).call() {
-        Ok(response) => match response.into_string() {
+        Ok(response) => match response.into_body().read_to_string() {
             Ok(text) => {
                 println!("API Response: {}", text);
                 Message::ApiResponse(Ok(text))
@@ -71,7 +74,8 @@ impl Robigui {
             Message::UsernameChanged(username) => self.username = username,
             Message::SearchClicked => {
                 let username = self.username.clone();
-                return Task::perform(async move { search_user(username) }, |msg| msg);
+                let session_id = self.session_id.clone();
+                return Task::perform(async move { search_user(username, session_id) }, |msg| msg);
             }
             Message::ApiResponse(result) => match result {
                 Ok(response) => println!("Search completed successfully: {}", response),

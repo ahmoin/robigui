@@ -21,4 +21,5 @@ iced = { git = "https://github.com/iced-rs/iced.git", features = [
     "image",
 ] }
 rfd = { git = "https://github.com/PolyMeilex/rfd.git" }
-ureq = "2.9"
+ureq = { git = "https://github.com/algesten/ureq" }
+uuid = { git = "https://github.com/uuid-rs/uuid", features = ["v4"] }
